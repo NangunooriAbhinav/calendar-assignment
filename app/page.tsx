@@ -145,20 +145,9 @@ export default function Home() {
   const goToToday = () => {
     setCurrentDate(new Date());
   };
-
-  const handleEventClick = (event: Event) => {
-    setSelectedEvent(event);
-    setShowEventModal(true);
-  };
-
   const handleDayViewClick = (day: number) => {
     setSelectedDay(day);
     setShowDayModal(true);
-  };
-
-  const closeEventModal = () => {
-    setShowEventModal(false);
-    setSelectedEvent(null);
   };
 
   const closeDayModal = () => {
@@ -272,7 +261,6 @@ export default function Home() {
                                 : ""
                             }`}
                             style={{ backgroundColor: event.color }}
-                            onClick={() => handleEventClick(event)}
                             title={`${event.title} (${formatTime(event.startTime)} - ${formatTime(event.endTime)})${event.hasConflict ? " - Time conflict detected!" : ""}`}
                           >
                             <div className="flex items-center justify-between">
@@ -303,84 +291,6 @@ export default function Home() {
             })}
           </div>
         </div>
-
-        {/* Event Details Modal */}
-        {showEventModal && selectedEvent && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-              <div className="flex justify-between items-start mb-4">
-                <h2 className="text-xl font-bold text-gray-800">
-                  Event Details
-                </h2>
-                <button
-                  onClick={closeEventModal}
-                  className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
-                >
-                  ×
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-600">
-                    Title
-                  </label>
-                  <p className="text-lg text-gray-800">{selectedEvent.title}</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-600">
-                    Date
-                  </label>
-                  <p className="text-gray-800">
-                    {new Date(selectedEvent.date).toLocaleDateString()}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">
-                      Start Time
-                    </label>
-                    <p className="text-gray-800">
-                      {formatTime(selectedEvent.startTime)}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600">
-                      End Time
-                    </label>
-                    <p className="text-gray-800">
-                      {formatTime(selectedEvent.endTime)}
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-600">
-                    Color
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-4 h-4 rounded"
-                      style={{ backgroundColor: selectedEvent.color }}
-                    ></div>
-                    <span className="text-gray-800">{selectedEvent.color}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 flex justify-end">
-                <button
-                  onClick={closeEventModal}
-                  className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {showDayModal && selectedDay && (
           <div
@@ -419,10 +329,6 @@ export default function Home() {
                           ? "border-red-300 bg-red-50 shadow-red-100 shadow-md"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
-                      onClick={() => {
-                        handleEventClick(event);
-                        closeDayModal();
-                      }}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <h3
