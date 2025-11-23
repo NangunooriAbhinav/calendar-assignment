@@ -10,9 +10,16 @@ interface Event {
   date: string;
 }
 
+interface EventWithConflict extends Event {
+  hasConflict: boolean;
+  conflictLevel: number;
+}
+
 export default function Home() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<Event[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showEventModal, setShowEventModal] = useState(false);
   const today = new Date();
 
   const year = currentDate.getFullYear();
@@ -27,14 +34,55 @@ export default function Home() {
       try {
         const res = await fetch("/config.json");
         const eventsData = await res.json();
-
         setEvents(eventsData);
       } catch (error) {
-        console.error("faield to load events", error);
+        console.error("Failed to load events", error);
       }
     };
     loadEvents();
   }, []);
+
+  // Helper function to check if two time ranges overlap
+  const timeRangesOverlap = (
+    start1: string,
+    end1: string,
+    start2: string,
+    end2: string,
+  ): boolean => {
+    const parseTime = (time: string) => {
+      const [hours, minutes] = time.split(":").map(Number);
+      return hours * 60 + minutes;
+    };
+
+    const start1Minutes = parseTime(start1);
+    const end1Minutes = parseTime(end1);
+    const start2Minutes = parseTime(start2);
+    const end2Minutes = parseTime(end2);
+
+    return start1Minutes < end2Minutes && start2Minutes < end1Minutes;
+  };
+
+  // Detect conflicts and assign conflict levels
+  const getEventsWithConflicts = (dayEvents: Event[]): EventWithConflict[] => {
+    return dayEvents.map((event, index) => {
+      const conflicts = dayEvents.filter(
+        (otherEvent, otherIndex) =>
+          index !== otherIndex &&
+          timeRangesOverlap(
+            event.startTime,
+            event.endTime,
+            otherEvent.startTime,
+            otherEvent.endTime,
+          ),
+      );
+
+      return {
+        ...event,
+        hasConflict: conflicts.length > 0,
+        conflictLevel: conflicts.length,
+      };
+    });
+  };
 
   for (let i = 0; i < firstDay; i++) {
     days.push(null);
@@ -74,11 +122,9 @@ export default function Home() {
   };
 
   const isToday = (day: number) => {
-    return (
-      today.getDate() === day &&
-      today.getMonth() === currentDate.getMonth() &&
-      today.getFullYear() === currentDate.getFullYear()
-    );
+    if (!today) return false;
+    const d = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    return d.toDateString() === today.toDateString();
   };
 
   const getEventsForDate = (day: number) => {
@@ -88,6 +134,24 @@ export default function Home() {
 
   const goToToday = () => {
     setCurrentDate(new Date());
+  };
+
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setShowEventModal(true);
+  };
+
+  const closeModal = () => {
+    setShowEventModal(false);
+    setSelectedEvent(null);
+  };
+
+  const formatTime = (time: string) => {
+    const [hours, minutes] = time.split(":");
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
   };
 
   return (
@@ -100,19 +164,19 @@ export default function Home() {
           <div className="flex gap-2">
             <button
               onClick={() => navigateMonth("prev")}
-              className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600"
+              className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors"
             >
               Prev
             </button>
             <button
               onClick={goToToday}
-              className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600"
+              className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors"
             >
               Today
             </button>
             <button
               onClick={() => navigateMonth("next")}
-              className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600"
+              className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors"
             >
               Next
             </button>
@@ -134,17 +198,26 @@ export default function Home() {
           <div className="grid grid-cols-7 gap-1">
             {days.map((day, index) => {
               const dayEvents = day ? getEventsForDate(day) : [];
+              const eventsWithConflicts = getEventsWithConflicts(dayEvents);
+              const maxDisplayEvents = 2;
+              const hasMoreEvents =
+                eventsWithConflicts.length > maxDisplayEvents;
+              const displayEvents = eventsWithConflicts.slice(
+                0,
+                maxDisplayEvents,
+              );
+
               return (
                 <div
                   key={index}
-                  className={`h-24 border border-gray-200 p-2 hover:bg-gray-50 ${
+                  className={`h-20 border border-gray-200 p-1 hover:bg-gray-50 transition-colors ${
                     day && isToday(day) ? "bg-gray-300 border-gray-400" : ""
                   }`}
                 >
                   {day && (
                     <>
                       <span
-                        className={`text-sm font-medium ${
+                        className={`text-xs font-medium ${
                           isToday(day)
                             ? "text-gray-600 font-bold"
                             : "text-gray-600"
@@ -152,16 +225,35 @@ export default function Home() {
                       >
                         {day}
                       </span>
-                      <div className="mt-1 space-y-1">
-                        {dayEvents.map((event, eventIndex) => (
+                      <div className="mt-0.5 space-y-0.5">
+                        {displayEvents.map((event, eventIndex) => (
                           <div
                             key={eventIndex}
-                            className="text-xs p-1 rounded text-white truncate"
+                            className={`text-[10px] px-1 py-0.5 rounded text-white truncate cursor-pointer hover:opacity-80 transition-opacity ${
+                              event.hasConflict
+                                ? "ring-1 ring-yellow-400 ring-opacity-50"
+                                : ""
+                            }`}
                             style={{ backgroundColor: event.color }}
+                            onClick={() => handleEventClick(event)}
+                            title={`${event.title} (${formatTime(event.startTime)} - ${formatTime(event.endTime)})${event.hasConflict ? " - Has conflicts!" : ""}`}
                           >
-                            {event.title}
+                            <div className="flex items-center justify-between">
+                              <span className="truncate">{event.title}</span>
+                              {event.hasConflict && (
+                                <span className="ml-0.5 text-yellow-300 text-[8px]">
+                                  ⚠
+                                </span>
+                              )}
+                            </div>
                           </div>
                         ))}
+                        {hasMoreEvents && (
+                          <div className="text-[9px] text-gray-500 bg-gray-100 px-1 py-0.5 rounded">
+                            +{eventsWithConflicts.length - maxDisplayEvents}{" "}
+                            more
+                          </div>
+                        )}
                       </div>
                     </>
                   )}
@@ -170,6 +262,84 @@ export default function Home() {
             })}
           </div>
         </div>
+
+        {/* Event Details Modal */}
+        {showEventModal && selectedEvent && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-xl font-bold text-gray-800">
+                  Event Details
+                </h2>
+                <button
+                  onClick={closeModal}
+                  className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-600">
+                    Title
+                  </label>
+                  <p className="text-lg text-gray-800">{selectedEvent.title}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-600">
+                    Date
+                  </label>
+                  <p className="text-gray-800">
+                    {new Date(selectedEvent.date).toLocaleDateString()}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600">
+                      Start Time
+                    </label>
+                    <p className="text-gray-800">
+                      {formatTime(selectedEvent.startTime)}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600">
+                      End Time
+                    </label>
+                    <p className="text-gray-800">
+                      {formatTime(selectedEvent.endTime)}
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-600">
+                    Color
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-4 h-4 rounded"
+                      style={{ backgroundColor: selectedEvent.color }}
+                    ></div>
+                    <span className="text-gray-800">{selectedEvent.color}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={closeModal}
+                  className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
