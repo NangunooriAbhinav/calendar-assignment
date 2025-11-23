@@ -1,9 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+interface Event {
+  startTime: string;
+  endTime: string;
+  color: string;
+  title: string;
+  date: string;
+}
 
 export default function Home() {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [events, setEvents] = useState<Event[]>([]);
   const today = new Date();
 
   const year = currentDate.getFullYear();
@@ -12,6 +21,20 @@ export default function Home() {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const days = [];
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        const res = await fetch("/config.json");
+        const eventsData = await res.json();
+
+        setEvents(eventsData);
+      } catch (error) {
+        console.error("faield to load events", error);
+      }
+    };
+    loadEvents();
+  }, []);
 
   for (let i = 0; i < firstDay; i++) {
     days.push(null);
@@ -58,6 +81,11 @@ export default function Home() {
     );
   };
 
+  const getEventsForDate = (day: number) => {
+    const dateString = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    return events.filter((event) => event.date === dateString);
+  };
+
   return (
     <div className="min-h-screen bg-zinc-50 p-8 font-mono">
       <div className="max-w-4xl mx-auto">
@@ -92,24 +120,42 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-7 gap-1">
-            {days.map((day, index) => (
-              <div
-                key={index}
-                className={`h-24 border border-gray-200 p-2 hover:bg-gray-50 ${
-                  day && isToday(day) ? "bg-gray-300 border-gray-400" : ""
-                }`}
-              >
-                {day && (
-                  <span
-                    className={`text-sm font-medium ${
-                      isToday(day) ? "text-gray-600 font-bold" : "text-gray-600"
-                    }`}
-                  >
-                    {day}
-                  </span>
-                )}
-              </div>
-            ))}
+            {days.map((day, index) => {
+              const dayEvents = day ? getEventsForDate(day) : [];
+              return (
+                <div
+                  key={index}
+                  className={`h-24 border border-gray-200 p-2 hover:bg-gray-50 ${
+                    day && isToday(day) ? "bg-gray-300 border-gray-400" : ""
+                  }`}
+                >
+                  {day && (
+                    <>
+                      <span
+                        className={`text-sm font-medium ${
+                          isToday(day)
+                            ? "text-gray-600 font-bold"
+                            : "text-gray-600"
+                        }`}
+                      >
+                        {day}
+                      </span>
+                      <div className="mt-1 space-y-1">
+                        {dayEvents.map((event, eventIndex) => (
+                          <div
+                            key={eventIndex}
+                            className="text-xs p-1 rounded text-white truncate"
+                            style={{ backgroundColor: event.color }}
+                          >
+                            {event.title}
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

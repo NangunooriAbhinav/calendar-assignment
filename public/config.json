@@ -3,12 +3,14 @@
     "startTime": "09:00",
     "endTime": "17:00",
     "color": "#FF0000",
-    "title": "Meeting"
+    "title": "Meeting",
+    "date": "2025-11-06"
   },
   {
     "startTime": "18:00",
     "endTime": "20:00",
     "color": "#00FF00",
-    "title": "Lunch"
+    "title": "Lunch",
+    "date": "2025-11-25"
   }
 ]
