@@ -86,25 +86,37 @@ export default function Home() {
     return events.filter((event) => event.date === dateString);
   };
 
+  const goToToday = () => {
+    setCurrentDate(new Date());
+  };
+
   return (
     <div className="min-h-screen bg-zinc-50 p-8 font-mono">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={() => navigateMonth("prev")}
-            className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600"
-          >
-            Prev
-          </button>
-          <h1 className="text-3xl font-bold mb-8 text-center text-gray-600">
+        <div className="flex items-center justify-between mb-4 px-2">
+          <h1 className="text-3xl font-bold text-center text-gray-600">
             {monthNames[month]} {year}
           </h1>
-          <button
-            onClick={() => navigateMonth("next")}
-            className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600"
-          >
-            Next
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => navigateMonth("prev")}
+              className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600"
+            >
+              Prev
+            </button>
+            <button
+              onClick={goToToday}
+              className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600"
+            >
+              Today
+            </button>
+            <button
+              onClick={() => navigateMonth("next")}
+              className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600"
+            >
+              Next
+            </button>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-6">
