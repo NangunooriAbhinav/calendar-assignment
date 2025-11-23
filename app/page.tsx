@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 interface Event {
   startTime: string;
@@ -22,7 +22,11 @@ export default function Home() {
   const [showEventModal, setShowEventModal] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [showDayModal, setShowDayModal] = useState(false);
-  const today = new Date();
+
+  const today = useMemo(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }, []);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -44,7 +48,6 @@ export default function Home() {
     loadEvents();
   }, []);
 
-  // Helper function to check if two time ranges overlap
   const timeRangesOverlap = (
     start1: string,
     end1: string,
@@ -64,7 +67,6 @@ export default function Home() {
     return start1Minutes < end2Minutes && start2Minutes < end1Minutes;
   };
 
-  // Detect conflicts and assign conflict levels
   const getEventsWithConflicts = (dayEvents: Event[]): EventWithConflict[] => {
     return dayEvents.map((event, index) => {
       const conflicts = dayEvents.filter(
@@ -179,6 +181,7 @@ export default function Home() {
       day: "numeric",
     });
   };
+
   return (
     <div className="min-h-screen bg-zinc-50 p-8 font-mono">
       <div className="max-w-4xl mx-auto">
