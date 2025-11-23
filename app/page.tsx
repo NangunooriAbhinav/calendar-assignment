@@ -16,7 +16,12 @@ interface EventWithConflict extends Event {
 }
 
 export default function Home() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(() => {
+    if (typeof window === "undefined") {
+      return new Date(2024, 0, 1);
+    }
+    return new Date();
+  });
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showEventModal, setShowEventModal] = useState(false);
@@ -24,6 +29,7 @@ export default function Home() {
   const [showDayModal, setShowDayModal] = useState(false);
 
   const today = useMemo(() => {
+    if (typeof window === "undefined") return null;
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), now.getDate());
   }, []);
