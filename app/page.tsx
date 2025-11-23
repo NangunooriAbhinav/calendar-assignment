@@ -20,6 +20,8 @@ export default function Home() {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showEventModal, setShowEventModal] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [showDayModal, setShowDayModal] = useState(false);
   const today = new Date();
 
   const year = currentDate.getFullYear();
@@ -141,9 +143,19 @@ export default function Home() {
     setShowEventModal(true);
   };
 
-  const closeModal = () => {
+  const handleDayViewClick = (day: number) => {
+    setSelectedDay(day);
+    setShowDayModal(true);
+  };
+
+  const closeEventModal = () => {
     setShowEventModal(false);
     setSelectedEvent(null);
+  };
+
+  const closeDayModal = () => {
+    setShowDayModal(false);
+    setSelectedDay(null);
   };
 
   const formatTime = (time: string) => {
@@ -154,6 +166,19 @@ export default function Home() {
     return `${displayHour}:${minutes} ${ampm}`;
   };
 
+  const formatDate = (day: number) => {
+    const date = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      day,
+    );
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
   return (
     <div className="min-h-screen bg-zinc-50 p-8 font-mono">
       <div className="max-w-4xl mx-auto">
@@ -210,7 +235,10 @@ export default function Home() {
               return (
                 <div
                   key={index}
-                  className={`h-20 border border-gray-200 p-1 hover:bg-gray-50 transition-colors ${
+                  onClick={() => {
+                    handleDayViewClick(day ? day : 0);
+                  }}
+                  className={`h-25 border border-gray-200 p-1 hover:bg-gray-50 transition-colors ${
                     day && isToday(day) ? "bg-gray-300 border-gray-400" : ""
                   }`}
                 >
@@ -249,9 +277,12 @@ export default function Home() {
                           </div>
                         ))}
                         {hasMoreEvents && (
-                          <div className="text-[9px] text-gray-500 bg-gray-100 px-1 py-0.5 rounded">
-                            +{eventsWithConflicts.length - maxDisplayEvents}{" "}
-                            more
+                          <div
+                            className="text-[10px] text-gray-600 bg-gray-100 px-1 py-0.5 rounded cursor-pointer hover:bg-gray-200 transition-colors text-center font-bold"
+                            onClick={() => handleDayViewClick(day)}
+                            title={`View all ${eventsWithConflicts.length} events`}
+                          >
+                            ...
                           </div>
                         )}
                       </div>
@@ -272,7 +303,7 @@ export default function Home() {
                   Event Details
                 </h2>
                 <button
-                  onClick={closeModal}
+                  onClick={closeEventModal}
                   className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
                 >
                   ×
@@ -331,7 +362,86 @@ export default function Home() {
 
               <div className="mt-6 flex justify-end">
                 <button
-                  onClick={closeModal}
+                  onClick={closeEventModal}
+                  className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showDayModal && selectedDay && (
+          <div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            onClick={closeDayModal}
+          >
+            <div
+              className="bg-white rounded-lg p-6 max-w-lg w-full mx-4 shadow-xl max-h-[80vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800">
+                    All Events
+                  </h2>
+                  <p className="text-sm text-gray-600">
+                    {formatDate(selectedDay)}
+                  </p>
+                </div>
+                <button
+                  onClick={closeDayModal}
+                  className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {getEventsWithConflicts(getEventsForDate(selectedDay))
+                  .sort((a, b) => a.startTime.localeCompare(b.startTime))
+                  .map((event, index) => (
+                    <div
+                      key={index}
+                      className={`p-3 rounded-lg border cursor-pointer hover:shadow-md transition-shadow ${
+                        event.hasConflict
+                          ? "border-yellow-400 bg-yellow-50"
+                          : "border-gray-200"
+                      }`}
+                      onClick={() => handleEventClick(event)}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-semibold text-gray-800">
+                          {event.title}
+                        </h3>
+                        {event.hasConflict && (
+                          <span className="text-yellow-600 text-sm">
+                            ⚠ Conflict
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <span>
+                          {formatTime(event.startTime)} -{" "}
+                          {formatTime(event.endTime)}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <div
+                            className="w-3 h-3 rounded"
+                            style={{ backgroundColor: event.color }}
+                          ></div>
+                          <span>{event.color}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={closeDayModal}
                   className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors"
                 >
                   Close

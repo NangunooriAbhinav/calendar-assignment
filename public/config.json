@@ -19,5 +19,12 @@
     "color": "#00FF00",
     "title": "Call",
     "date": "2025-11-25"
+  },
+  {
+    "startTime": "18:00",
+    "endTime": "20:00",
+    "color": "#00FF00",
+    "title": "Meet",
+    "date": "2025-11-25"
   }
 ]
