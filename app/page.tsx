@@ -257,25 +257,26 @@ export default function Home() {
                         {displayEvents.map((event, eventIndex) => (
                           <div
                             key={eventIndex}
-                            className={`text-[10px] px-1 py-0.5 rounded text-white truncate cursor-pointer hover:opacity-80 transition-opacity ${
+                            className={`text-[10px] px-1 py-0.5 rounded text-white truncate cursor-pointer hover:opacity-80 transition-opacity relative ${
                               event.hasConflict
-                                ? "ring-1 ring-yellow-400 ring-opacity-50"
+                                ? "ring-2 ring-red-400 ring-opacity-70"
                                 : ""
                             }`}
                             style={{ backgroundColor: event.color }}
                             onClick={() => handleEventClick(event)}
-                            title={`${event.title} (${formatTime(event.startTime)} - ${formatTime(event.endTime)})${event.hasConflict ? " - Has conflicts!" : ""}`}
+                            title={`${event.title} (${formatTime(event.startTime)} - ${formatTime(event.endTime)})${event.hasConflict ? " - Time conflict detected!" : ""}`}
                           >
                             <div className="flex items-center justify-between">
                               <span className="truncate">{event.title}</span>
                               {event.hasConflict && (
-                                <span className="ml-0.5 text-yellow-300 text-[8px]">
+                                <span className="ml-0.5 text-red-200 text-[8px] animate-pulse">
                                   ⚠
                                 </span>
                               )}
                             </div>
                           </div>
                         ))}
+
                         {hasMoreEvents && (
                           <div
                             className="text-[10px] text-gray-600 bg-gray-100 px-1 py-0.5 rounded cursor-pointer hover:bg-gray-200 transition-colors text-center font-bold"
@@ -404,26 +405,35 @@ export default function Home() {
                   .map((event, index) => (
                     <div
                       key={index}
-                      className={`p-3 rounded-lg border cursor-pointer hover:shadow-md transition-shadow ${
+                      className={`p-3 rounded-lg border cursor-pointer hover:shadow-md transition-all duration-200 relative ${
                         event.hasConflict
-                          ? "border-yellow-400 bg-yellow-50"
-                          : "border-gray-200"
+                          ? "border-red-300 bg-red-50 shadow-red-100 shadow-md"
+                          : "border-gray-200 hover:border-gray-300"
                       }`}
                       onClick={() => handleEventClick(event)}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-gray-800">
+                        <h3
+                          className={`font-semibold ${event.hasConflict ? "text-red-800" : "text-gray-800"}`}
+                        >
                           {event.title}
                         </h3>
                         {event.hasConflict && (
-                          <span className="text-yellow-600 text-sm">
-                            ⚠ Conflict
-                          </span>
+                          <div className="flex items-center gap-1 text-red-600 text-sm">
+                            <span className="animate-pulse">⚠</span>
+                            <span className="text-xs font-medium">
+                              Time Conflict
+                            </span>
+                          </div>
                         )}
                       </div>
 
                       <div className="flex items-center gap-4 text-sm text-gray-600">
-                        <span>
+                        <span
+                          className={
+                            event.hasConflict ? "font-medium text-red-700" : ""
+                          }
+                        >
                           {formatTime(event.startTime)} -{" "}
                           {formatTime(event.endTime)}
                         </span>
@@ -435,6 +445,16 @@ export default function Home() {
                           <span>{event.color}</span>
                         </div>
                       </div>
+
+                      {event.hasConflict && (
+                        <div className="mt-2 text-xs text-red-600 bg-red-100 px-2 py-1 rounded flex items-center gap-1">
+                          <span>⚠</span>
+                          <span>
+                            This event overlaps with other events at the same
+                            time
+                          </span>
+                        </div>
+                      )}
                     </div>
                   ))}
               </div>
