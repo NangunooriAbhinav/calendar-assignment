@@ -4,6 +4,7 @@ import { useState } from "react";
 
 export default function Home() {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const today = new Date();
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -37,12 +38,46 @@ export default function Home() {
 
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+  const navigateMonth = (direction: "prev" | "next") => {
+    setCurrentDate((prevDate) => {
+      const newDate = new Date(prevDate);
+      if (direction === "prev") {
+        newDate.setMonth(newDate.getMonth() - 1);
+      } else {
+        newDate.setMonth(newDate.getMonth() + 1);
+      }
+      return newDate;
+    });
+  };
+
+  const isToday = (day: number) => {
+    return (
+      today.getDate() === day &&
+      today.getMonth() === currentDate.getMonth() &&
+      today.getFullYear() === currentDate.getFullYear()
+    );
+  };
+
   return (
     <div className="min-h-screen bg-zinc-50 p-8 font-mono">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-center text-gray-600">
-          {monthNames[month]} {year}
-        </h1>
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => navigateMonth("prev")}
+            className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600"
+          >
+            Prev
+          </button>
+          <h1 className="text-3xl font-bold mb-8 text-center text-gray-600">
+            {monthNames[month]} {year}
+          </h1>
+          <button
+            onClick={() => navigateMonth("next")}
+            className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600"
+          >
+            Next
+          </button>
+        </div>
 
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="grid grid-cols-7 gap-1 mb-4">
@@ -60,10 +95,16 @@ export default function Home() {
             {days.map((day, index) => (
               <div
                 key={index}
-                className="h-24 border border-gray-200 p-2 hover:bg-gray-50"
+                className={`h-24 border border-gray-200 p-2 hover:bg-gray-50 ${
+                  day && isToday(day) ? "bg-gray-300 border-gray-400" : ""
+                }`}
               >
                 {day && (
-                  <span className="text-sm font-medium text-gray-600">
+                  <span
+                    className={`text-sm font-medium ${
+                      isToday(day) ? "text-gray-600 font-bold" : "text-gray-600"
+                    }`}
+                  >
                     {day}
                   </span>
                 )}
