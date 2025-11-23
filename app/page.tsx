@@ -410,7 +410,10 @@ export default function Home() {
                           ? "border-red-300 bg-red-50 shadow-red-100 shadow-md"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
-                      onClick={() => handleEventClick(event)}
+                      onClick={() => {
+                        handleEventClick(event);
+                        closeDayModal();
+                      }}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <h3
