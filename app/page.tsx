@@ -2,6 +2,23 @@
 
 import { useEffect, useState, useMemo } from "react";
 
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+] as const;
+
+const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+
 interface Event {
   startTime: string;
   endTime: string;
@@ -15,6 +32,33 @@ interface EventWithConflict extends Event {
   conflictLevel: number;
 }
 
+const timeRangesOverlap = (
+  start1: string,
+  end1: string,
+  start2: string,
+  end2: string,
+): boolean => {
+  const parseTime = (time: string) => {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours * 60 + minutes;
+  };
+
+  const start1Minutes = parseTime(start1);
+  const end1Minutes = parseTime(end1);
+  const start2Minutes = parseTime(start2);
+  const end2Minutes = parseTime(end2);
+
+  return start1Minutes < end2Minutes && start2Minutes < end1Minutes;
+};
+
+const formatTime = (time: string) => {
+  const [hours, minutes] = time.split(":");
+  const hour = parseInt(hours);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour % 12 || 12;
+  return `${displayHour}:${minutes} ${ampm}`;
+};
+
 export default function Home() {
   const [currentDate, setCurrentDate] = useState(() => {
     if (typeof window === "undefined") {
@@ -23,8 +67,6 @@ export default function Home() {
     return new Date();
   });
   const [events, setEvents] = useState<Event[]>([]);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [showEventModal, setShowEventModal] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [showDayModal, setShowDayModal] = useState(false);
 
@@ -53,25 +95,6 @@ export default function Home() {
     };
     loadEvents();
   }, []);
-
-  const timeRangesOverlap = (
-    start1: string,
-    end1: string,
-    start2: string,
-    end2: string,
-  ): boolean => {
-    const parseTime = (time: string) => {
-      const [hours, minutes] = time.split(":").map(Number);
-      return hours * 60 + minutes;
-    };
-
-    const start1Minutes = parseTime(start1);
-    const end1Minutes = parseTime(end1);
-    const start2Minutes = parseTime(start2);
-    const end2Minutes = parseTime(end2);
-
-    return start1Minutes < end2Minutes && start2Minutes < end1Minutes;
-  };
 
   const getEventsWithConflicts = (dayEvents: Event[]): EventWithConflict[] => {
     return dayEvents.map((event, index) => {
@@ -102,23 +125,6 @@ export default function Home() {
     days.push(day);
   }
 
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
-  const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
   const navigateMonth = (direction: "prev" | "next") => {
     setCurrentDate((prevDate) => {
       const newDate = new Date(prevDate);
@@ -145,6 +151,7 @@ export default function Home() {
   const goToToday = () => {
     setCurrentDate(new Date());
   };
+
   const handleDayViewClick = (day: number) => {
     setSelectedDay(day);
     setShowDayModal(true);
@@ -153,14 +160,6 @@ export default function Home() {
   const closeDayModal = () => {
     setShowDayModal(false);
     setSelectedDay(null);
-  };
-
-  const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(":");
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? "PM" : "AM";
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
   };
 
   const formatDate = (day: number) => {
@@ -182,7 +181,7 @@ export default function Home() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-4 px-2">
           <h1 className="text-3xl font-bold text-center text-gray-600">
-            {monthNames[month]} {year}
+            {MONTH_NAMES[month]} {year}
           </h1>
           <div className="flex gap-2">
             <button
@@ -208,7 +207,7 @@ export default function Home() {
 
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="grid grid-cols-7 gap-1 mb-4">
-            {weekDays.map((day) => (
+            {WEEK_DAYS.map((day) => (
               <div
                 key={day}
                 className="p-3 text-center font-semibold text-gray-600"
