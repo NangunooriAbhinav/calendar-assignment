@@ -177,13 +177,14 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 p-8 font-mono">
+    <div className="min-h-screen bg-zinc-50 p-2 sm:p-4 md:p-6 lg:p-8 font-mono">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-4 px-2">
-          <h1 className="text-3xl font-bold text-center text-gray-600">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 px-2 gap-3 sm:gap-0">
+          <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-center sm:text-left text-gray-600">
             {MONTH_NAMES[month]} {year}
           </h1>
-          <div className="flex gap-2">
+
+          <div className="flex items-center justify-center sm:justify-end gap-2">
             <button
               onClick={() => navigateMonth("prev")}
               className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-600 transition-colors"
@@ -205,19 +206,19 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="grid grid-cols-7 gap-1 mb-4">
+        <div className="bg-white rounded-lg shadow-lg p-2 sm:p-4 md:p-6">
+          <div className="grid grid-cols-7 gap-0.5 sm:gap-1 md:gap-1 mb-2 sm:mb-4">
             {WEEK_DAYS.map((day) => (
               <div
                 key={day}
-                className="p-3 text-center font-semibold text-gray-600"
+                className="p-1 sm:p-2 md:p-3 text-center font-semibold text-gray-600 text-xs sm:text-sm"
               >
                 {day}
               </div>
             ))}
           </div>
 
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 gap-0.5 sm:gap-1 md:gap-1">
             {days.map((day, index) => {
               const dayEvents = day ? getEventsForDate(day) : [];
               const eventsWithConflicts = getEventsWithConflicts(dayEvents);
@@ -235,14 +236,14 @@ export default function Home() {
                   onClick={() => {
                     handleDayViewClick(day ? day : 0);
                   }}
-                  className={`h-25 border border-gray-200 p-1 hover:bg-gray-50 transition-colors ${
+                  className={`h-16 sm:h-20 md:h-24 lg:h-28 border border-gray-200 p-0.5 sm:p-1 md:p-2 hover:bg-gray-50 transition-colors ${
                     day && isToday(day) ? "bg-gray-300 border-gray-400" : ""
                   }`}
                 >
                   {day && (
                     <>
                       <span
-                        className={`text-xs font-medium ${
+                        className={`text-xs sm:text-sm font-medium ${
                           isToday(day)
                             ? "text-gray-600 font-bold"
                             : "text-gray-600"
@@ -254,9 +255,9 @@ export default function Home() {
                         {displayEvents.map((event, eventIndex) => (
                           <div
                             key={eventIndex}
-                            className={`text-[10px] px-1 py-0.5 rounded text-white truncate cursor-pointer hover:opacity-80 transition-opacity relative ${
+                            className={`text-[8px] sm:text-[10px] md:text-xs px-1 py-0.5 rounded text-white truncate cursor-pointer hover:opacity-80 transition-opacity relative ${
                               event.hasConflict
-                                ? "ring-2 ring-red-400 ring-opacity-70"
+                                ? "ring-1 sm:ring-2 ring-red-400 ring-opacity-70"
                                 : ""
                             }`}
                             style={{ backgroundColor: event.color }}
