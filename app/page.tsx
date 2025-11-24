@@ -222,9 +222,12 @@ export default function Home() {
             {days.map((day, index) => {
               const dayEvents = day ? getEventsForDate(day) : [];
               const eventsWithConflicts = getEventsWithConflicts(dayEvents);
-              const maxDisplayEvents = 2;
-              const hasMoreEvents =
-                eventsWithConflicts.length > maxDisplayEvents;
+              const totalEvents = eventsWithConflicts.length;
+              const shouldShowDots = totalEvents >= 3;
+              const maxDisplayEvents = shouldShowDots
+                ? 1
+                : Math.min(2, totalEvents);
+              const hasMoreEvents = totalEvents > maxDisplayEvents;
               const displayEvents = eventsWithConflicts.slice(
                 0,
                 maxDisplayEvents,
@@ -236,7 +239,7 @@ export default function Home() {
                   onClick={() => {
                     handleDayViewClick(day ? day : 0);
                   }}
-                  className={`h-16 sm:h-20 md:h-24 lg:h-28 border border-gray-200 p-0.5 sm:p-1 md:p-2 hover:bg-gray-50 transition-colors ${
+                  className={`h-18 md:h-20 lg:h-24 border border-gray-200 p-0.5 sm:p-1 md:p-2 hover:bg-gray-50 transition-colors ${
                     day && isToday(day) ? "bg-gray-300 border-gray-400" : ""
                   }`}
                 >
@@ -280,7 +283,7 @@ export default function Home() {
                             onClick={() => handleDayViewClick(day)}
                             title={`View all ${eventsWithConflicts.length} events`}
                           >
-                            ...
+                            +{eventsWithConflicts.length - maxDisplayEvents}
                           </div>
                         )}
                       </div>

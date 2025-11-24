@@ -26,5 +26,12 @@
     "color": "#00FF00",
     "title": "Meet",
     "date": "2025-11-25"
+  },
+  {
+    "startTime": "14:00",
+    "endTime": "15:00",
+    "color": "#0000FF",
+    "title": "Workshop",
+    "date": "2025-11-25"
   }
 ]
